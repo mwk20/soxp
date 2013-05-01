@@ -25,15 +25,19 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(soxp_listener, [{new_socket_handler, fun example_handler/1}], worker),
+    {ok, { {one_for_one, 5, 10}, [?CHILD(soxp_listener, [{new_socket_handler, fun connection_handler/1}], worker),
                                   ?CHILD(soxp_connection_sup, supervisor)]} }.
 
-example_handler(Sock) ->
-    erlang:spawn(fun() ->
-                         gen_tcp:send(Sock, <<"Foo">>),
-                         timer:sleep(750),
-                         gen_tcp:send(Sock, <<"Bar">>),
-                         timer:sleep(750),
-                         gen_tcp:send(Sock, <<"Baz">>),
-                         gen_tcp:close(Sock)
-                 end).
+connection_handler(Sock) ->
+    %% @todo the connection (and hence the soxp_connection) could
+    %% close before we can message it, causing this function to throw.
+
+    %% spin up a new soxp_connection (under the control of the
+    %% soxp_connection_sup)
+    {ok, Pid} = soxp_connection_sup:start_child(Sock),
+
+    %% socket handover
+    gen_tcp:controlling_process(Sock, Pid),
+
+    %% notify soxp_connection that socket handover complete
+    Pid ! socket_handed_over.

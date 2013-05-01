@@ -35,8 +35,7 @@ init([{new_socket_handler, Fun}]) when is_function(Fun, 1) ->
     process_flag(trap_exit, true),
 
     %% create listening socket
-    {ok, LSock} = gen_tcp:listen(8100, [binary, {nodelay, true}, {packet, raw}, {reuseaddr, true}]),
-%% @todo    , {active, true}
+    {ok, LSock} = gen_tcp:listen(8100, [binary, {nodelay, true}, {packet, raw}, {reuseaddr, true}, {active, false}]),
 
     %% we use the gen_server timeout to accept connections
     {ok, #soxp_listener_state{lsock=LSock, new_socket_handler=Fun}, 0}.

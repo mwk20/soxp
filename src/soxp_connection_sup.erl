@@ -4,7 +4,8 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0]).
+-export([start_link/0,
+         start_child/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -19,9 +20,13 @@
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
+start_child(Sock) ->
+    supervisor:start_child(?MODULE, [Sock]).
+
+
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
 
 init([]) ->
-    {ok, { {simple_one_for_one, 5, 10}, [?CHILD(nonexistent, worker)]} }.
+    {ok, { {simple_one_for_one, 0, 1}, [?CHILD(soxp_connection, worker)]} }.
