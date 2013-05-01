@@ -25,7 +25,8 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(soxp_listener, [{new_socket_handler, fun example_handler/1}], worker)]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(soxp_listener, [{new_socket_handler, fun example_handler/1}], worker),
+                                  ?CHILD(soxp_connection_sup, supervisor)]} }.
 
 example_handler(Sock) ->
     erlang:spawn(fun() ->
